@@ -1,0 +1,12 @@
+NODE_ENV=local
+PORT=3032
+JWT_SECRET=dbe21daea8832fe9dbeb2c5292721cafbbace3f4da15550a0047e8f89733eb04
+
+AUTH_SERVICE="gmail"
+AUTH_HOST="smtp.gmail.com"
+AUTH_USER="sajidhgn1@gmail.com"
+AUTH_PASS="aezrsihhulyytajr"
+
+AUTH_EMAIL_PORT=587
+FRONTEND_URL=http://localhost:3000
+PANEL_URL=http://localhost:3032
