@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const BlacklistedToken = require('../models/BlacklistedToken');
 const { generateAccessToken, generateRandomPassword, generateHashedPassword } = require('../utils/jwtToken');
 const { sendEmail } = require('../utils/mailer');
-const { successResponse, errorResponse, unauthorizedResponse, notFoundResponse } = require('../utils/apiResponses');
+const { successResponse, errorResponse, unauthorizedResponse, notFoundResponse, validationErrorResponse } = require('../utils/apiResponses');
 const { registerValidation } = require('../validations/registerValidation');
 
 
@@ -11,7 +12,7 @@ exports.register = async (req, res) => {
 
     const { error } = registerValidation(req.body);
     if (error) {
-       return notFoundResponse(res, error.details[0].message);
+        return notFoundResponse(res, error.details[0].message);
     }
 
     try {
@@ -225,6 +226,38 @@ exports.resetPassword = async (req, res) => {
         await user.save();
 
         return successResponse(res, {}, "Password successfully reset.");
+
+    } catch (error) {
+        return errorResponse(res, error.message);
+    }
+};
+
+// Log Out
+exports.logout = async (req, res) => {
+    try {
+
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+
+        const userId = req.user?.id;
+
+        if (!userId) {
+
+            if (token) {
+                await BlacklistedToken.create({ token });
+            }
+            req.session.destroy((err) => {
+                if (err) {
+                    return errorResponse(res, "Logout failed")
+                }
+                res.clearCookie("connect.sid");
+                return successResponse(res, "Logged out successfully");
+            });
+        } else {
+            if (token) {
+                await BlacklistedToken.create({ token });
+            }
+            return successResponse(res, "Logout successful");
+        }
 
     } catch (error) {
         return errorResponse(res, error.message);
